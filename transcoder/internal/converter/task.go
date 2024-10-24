@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -18,25 +19,37 @@ type VideoTask struct {
 	Path    string `json:"path"`
 }
 
-type VideoConvert struct{}
-
-func NewVideoConvert() *VideoConvert {
-	return &VideoConvert{}
+type VideoConvert struct {
+	db *sql.DB
 }
 
-func (c *VideoConvert) Handle(msg []byte) error {
+func NewVideoConvert(db *sql.DB) *VideoConvert {
+	return &VideoConvert{
+		db: db,
+	}
+}
+
+func (c *VideoConvert) Handle(msg []byte) {
 	var task VideoTask
 	err := json.Unmarshal(msg, &task)
 	if err != nil {
 		c.logError(task, "failed to unmarshal task", err)
-		return err
+		return
+	}
+	if IsProcessed(c.db, task.VideoId) {
+		slog.Info("Video already processed", slog.Int("video_id", task.VideoId))
+		return
 	}
 	err = c.processVideo(&task)
 	if err != nil {
 		c.logError(task, "failed to process video", err)
-		return err
+		return
 	}
-	return nil
+	err = MarkAsProcessed(c.db, task.VideoId)
+	if err != nil {
+		c.logError(task, "failed to mark video as processed", err)
+		return
+	}
 }
 
 func (c *VideoConvert) processVideo(task *VideoTask) error {
@@ -127,5 +140,5 @@ func (c *VideoConvert) logError(task VideoTask, message string, err error) {
 	}
 	serializedError, _ := json.Marshal(errorData)
 	slog.Error("Processing error", slog.String("error_details", string(serializedError)))
-	// TODO: register error on database
+	RegisterError(c.db, errorData)
 }

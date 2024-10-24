@@ -7,6 +7,13 @@ services:
     volumes:
       - .:/app
       - external-storage:/media/uploads
+    environment:
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5431
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DBNAME=codetube_transcoder
+      - POSTGRES_SSLMODE=disable
     depends_on:
       - db
     extra_hosts:
