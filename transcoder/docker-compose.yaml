@@ -14,6 +14,12 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DBNAME=codetube_transcoder
       - POSTGRES_SSLMODE=disable
+      - RABBITMQ_URL=amqp://guest:guest@host.docker.internal:5672
+      - CONVERSION_EXCHANGE=conversion_exchange
+      - CONVERSION_QUEUE=conversion_queue
+      - CONVERSION_KEY=conversion_key
+      - CONFIRMATION_KEY=confirmation_key
+      - CONFIRMATION_QUEUE=confirmation_queue
     depends_on:
       - db
     extra_hosts:
@@ -50,6 +56,18 @@ services:
       - "5151:80"
     depends_on:
       - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: codetube-transcoder-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
