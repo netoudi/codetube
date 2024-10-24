@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: codetube-transcoder-app
+    volumes:
+      - .:/app
+      - external-storage:/media/uploads
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: postgres:15.8-alpine
+    container_name: codetube-transcoder-db
+    restart: always
+    tty: true
+    volumes:
+      - .docker/postgres/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=codetube_transcoder
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5431:5432"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  pgadmin:
+    image: dpage/pgadmin4:8.12.0
+    container_name: codetube-transcoder-pgadmin
+    restart: always
+    tty: true
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@user.com
+      - PGADMIN_DEFAULT_PASSWORD=secret
+    ports:
+      - "5151:80"
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  db_data: {}
+  pgadmin_data: {}
+  external-storage:
+    external: true
