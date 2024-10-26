@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block page_title %}
+  {% if not tag %}
+    Home
+  {% else %}
+    {{ tag.name }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="btn-group" role="group" aria-label="Basic example">
+    {% if not id %}
+      <a href="/blog/" class="btn btn-sm btn-primary">Home</a>
+    {% else %}
+      <a href="/blog/" class="btn btn-sm btn-outline-primary">Home</a>
+    {% endif %}
+
+    {% for tag in tags %}
+      {% if tag.id == id %}
+        <a href="/blog/tag/{{ tag.id }}" class="btn btn-sm btn-primary">{{ tag }}</a>
+      {% else %}
+        <a href="/blog/tag/{{ tag.id }}" class="btn btn-sm btn-outline-primary">{{ tag }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if not posts %}
+    <p>Não há posts cadastrados!</p>
+  {% endif %}
+
+  {% if posts %}
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th scope="col" width="2%">#</th>
+          <th scope="col">Título</th>
+          <th scope="col" width="25%">Críado em</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in posts %}
+          <tr>
+            <th scope="row">{{ post.id }}</th>
+            <td>
+              <a href="/blog/post/{{ post.id }}">{{ post.title }}</a>
+            </td>
+            <td>{{ post.created_at }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
